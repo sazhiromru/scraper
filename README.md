@@ -155,3 +155,232 @@ def main():
 if __name__ == "__main__":
     main()
 
+</details>
+
+## 2. Обработка данных
+<a id="data-wrangling"></a>
+Сбор данных с трех веб-сайтов и сохранение в формате CSV.
+  
+  Используемые технологии: Pandas, NumPy, Selenium, Beautiful Soup, re
+  
+### Merge.
+Внешним слиянием соединяем три csv, округялем цифры, приводим валюту к доллару, убираем дубликаты, ошибки и находим самые выгодные сделки по продаже китай->рф и рф->китай
+<details>
+  <summary><strong>📜 Merge код</strong></summary>
+
+```python
+import pandas as pd
+import numpy as np
+from datetime import datetime
+
+timestamp = datetime.now().strftime('%d-%m-%Y')
+
+path_c5 = f'c5game_{timestamp}.csv'
+path_market = f'market_{timestamp}.csv'
+path_buff = f'buff_{timestamp}.csv'
+path_buff_buyorders = f'buff_buyorders_{timestamp}.csv'
+
+#автоматического обновления курса нет, но курс существенно юань/доллар не меняется много лет. 
+cny_usd = 0.14
+profit_coef = 0.9025
+
+df_c5 = pd.read_csv(path_c5, encoding = 'utf-16')
+df_c5.drop_duplicates()
+df_c5.rename(columns = {'c5_item':'Item'},inplace = True)
+#Создан фрейм с5 с колонками 'Item', 'c5_price'
+
+df_buff_buyorders = pd.read_csv(path_buff_buyorders, encoding = 'utf-16')
+df_buff_buyorders.rename(columns = {'buff_item':'Item', 'buff_price':'price'}, inplace = True)
+#Создан фрейм buff_buyorders с колонками 'Item', 'buyorders_price'
+
+df_market = pd.read_csv(path_market, encoding = 'utf-16')
+#Создан фрейм market с колонками 'Item', 'market_price'
+
+df_buff = pd.read_csv(path_buff, encoding = 'utf-16')
+df_buff.rename(columns = {'buff_item':'Item'},inplace = True )
+#Создан фрейм buff с колонками 'Item', 'buff_price'
+
+df_final = pd.merge(df_buff, df_market, on = 'Item', how = 'outer')
+df_final = pd.merge(df_final, df_c5, on = 'Item', how = 'outer')
+# внешний мердж
+
+df_final['c5_price'] =  df_final['c5_price'].astype(float).fillna(0)
+df_final['buff_price'] =  df_final['buff_price'].astype(float).fillna(0)
+df_final['market_price'] =  df_final['market_price'].astype(float).fillna(0)
+
+df_final['buff_price'] = df_final['buff_price'].astype(float).apply(lambda x : x*cny_usd)
+df_final['c5_price'] = df_final['c5_price'].astype(float).apply(lambda x : x*cny_usd)
+# выполнены округление и очистка, приведение йен к долларам
+
+'''Сравнение цен по продаже китай -> маркет, выбор лучших сделок на c5game and buff163'''
+df_direct = df_final.copy(deep = True)
+
+df_direct['market_price'] = df_direct['market_price'].astype(float).apply(lambda x: x*profit_coef)
+df_direct['market_c5'] = (df_direct['market_price']/df_direct['c5_price'])
+df_direct['market_buff'] = (df_direct['market_price']/df_direct['buff_price'])
+df_direct.replace([np.inf, -np.inf], 0, inplace=True)
+
+df_direct['best_price'] = np.maximum(df_direct['market_buff'], df_direct['market_c5'])
+df_direct['label'] = np.where(df_direct['market_buff']>df_direct['market_c5'],'buff','c5')
+df_direct = df_direct.sort_values(by = 'best_price', ascending=False)
+#
+
+columns_to_round = ['c5_price', 'market_price', 'buff_price', 'market_c5', 'market_buff', 'best_price']
+df_direct[columns_to_round] = df_direct[columns_to_round].round(4)
+df_direct['Item'] = df_direct['Item'].str.strip()
+df_direct.drop_duplicates(subset=['Item'], inplace=True)
+df_direct.reset_index(drop=True, inplace=True)
+
+df_direct.drop(columns=['Date','Date_x','Date_y'], inplace=True)
+df_direct['Date'] = timestamp
+
+df_direct.drop_duplicates(inplace=True)
+
+df_direct.to_csv(f'direct_{timestamp}.csv',index = False, encoding = 'utf-16')
+
+'''Сравнение цен по продаже маркет -> китай, выбор лучших сделок по ордерам на покупку на бафф'''
+df_reverse = pd.merge(df_market, df_buff_buyorders, on = 'Item', how = 'outer')
+df_reverse = df_reverse.fillna(0)
+df_reverse['buyorders_price'] = df_reverse['buyorders_price'].astype(float).apply(lambda x: x*cny_usd)
+df_reverse['coef'] = df_reverse['buyorders_price'] / df_reverse['market_price']
+df_reverse.replace(np.inf,0, inplace = True)
+df_reverse.sort_values(by = 'coef', ascending=False, inplace = True)
+
+df_reverse.drop(columns=['Date_x','Date_x'], inplace=True)
+df_reverse['Date'] = timestamp
+df_reverse.drop_duplicates(inplace = True)
+
+df_reverse.to_csv(f'reverse_{timestamp}.csv',index = False, encoding = 'utf-16')
+
+</details>
+
+### Создание ссылок для проверки рекомендаций.
+120 предметов с потенциально лучшей прибылью проверяются по истории продаж за последний месяц. Для этого необходимо сгенерировать ссылку для перехода на страницу предмета на сайта market-csgo.
+В соответствии со структурой данных на сайте создан справочник, позволяющий сконструировать ссылку по названию предмета.
+
+Из инетересного - символы '™' и '★'.
+
+Для генерации категорий и корректным сравнением со справочником символы удаляются специальной функцией.
+
+Для генерации ссылки символы меняются на специальные плейсхолдеры и обратно, для результата в виде AK-47/StatTrak™%20AK-47 или Shadow%20Daggers/★%20Shadow%20Daggers
+<details>
+  <summary><strong>📜 Url_creator код</strong></summary>
+```python
+import pandas as pd
+import re
+from urllib.parse import quote
+from datetime import datetime
+
+timestamp = datetime.now().strftime('%d-%m-%Y')
+path = f'direct_{timestamp}.csv'
+
+df = pd.read_csv(path,encoding = 'utf-16',on_bad_lines='skip')
+
+def categorization(item):
+    category_mapping = {
+        "Knife": [
+            "Bayonet", "Bowie Knife", "Butterfly Knife", "Classic Knife", "Falchion Knife", "Flip Knife", "Gut Knife", 
+            "Huntsman Knife", "Karambit", "M9 Bayonet", "Navaja Knife", "Nomad Knife", "Paracord Knife", "Skeleton Knife", 
+            "Stiletto Knife", "Survival Knife", "Talon Knife", "Ursus Knife", "Kukri Knife", "Shadow Daggers",
+            "Butterfly Knife | Fade"
+        ],
+        "Agent": [
+            "Agent", "Master Agent", "Exceptional Agent", "Superior Agent", "Sir Bloody", "Lt. Commander", "Vypa Sista",
+            "Buckshot", "Special Agent", "Chem-Haz Capitaine", "Dragomir", "Cmdr. Davida", "Slingshot", "Chef d'Escadron",
+            "Safecracker", "1st Lieutenant", "Number K", "Enforcer", "Markus Delrow", "Maximus", "Ricksaw", "Goggles",
+            "Crasswater The Forgotten", "Trapper Aggressor", "Lieutenant Rex Krikey", "Col. Mangos Dabisi",
+            "B Squadron Officer", "Trapper", "Cmdr. Frank 'Wet Sox' Baroud", "John 'Van Healen' Kask", "Little Kev",
+            "D Squadron Officer", "Bio-Haz Specialist", "Chem-Haz Specialist", "'Medium Rare' Crasswater",
+            "Operator", "The Elite Mr. Muhlik", "Street Soldier", "Getaway Sally", "Bloody Darryl The Strapped",
+            "3rd Commando Company", "Cmdr. Mae 'Dead Cold' Jamison", "Sous-Lieutenant Medic", "Michael Syfers",
+            "Jungle Rebel", "Elite Trapper Solman", "Sergeant Bombson", "Officer Jacques Beltram", "Arno The Overgrown",
+            "'The Doctor' Romanov", "Osiris", "'Two Times' McCoy", "Blackwolf", "Aspirant",
+            "Lieutenant 'Tree Hugger' Farlow", "Ground Rebel", "Primeiro Tenente", "Prof. Shahmat", 
+            "Rezan The Ready", "Rezan the Redshirt", "Seal Team 6 Soldier"
+        ],
+        "Pistol": ["USP-S", "Glock-18", "P2000", "Desert Eagle", "Five-SeveN", "CZ75-Auto", "P250", "Dual Berettas", "Tec-9", "R8 Revolver"],
+        "Rifle": ["AK-47", "M4A4", "M4A1-S", "FAMAS", "Galil AR", "SG 553", "AUG"],
+        "Sniper Rifle": ["AWP", "SSG 08", "SCAR-20", "G3SG1"],
+        "SMG": ["MP7", "P90", "UMP-45", "MAC-10", "MP9", "PP-Bizon", "MP5-SD"],
+        "Shotgun": ["Nova", "XM1014", "MAG-7", "Sawed-Off"],
+        "Machine Gun": ["M249", "Negev"],
+        "Gloves": [
+            "Gloves", "Hand Wraps", "Driver Gloves", "Moto Gloves", "Specialist Gloves", "Sport Gloves",
+            "★ Hand Wraps | Spruce DDPAT (Field-Tested)"
+        ],
+        "Container": [
+            "Case", "Capsule", "Container", 
+            "Music Kit | Feed Me, High Noon",
+            "StatTrak™ Initiators Music Kit Box", 
+            "StatTrak™ NIGHTMODE Music Kit Box", 
+            "StatTrak™ Masterminds 2 Music Kit Box", 
+            "StatTrak™ Masterminds Music Kit Box", 
+            "StatTrak™ Tacticians Music Kit Box",
+            "Berlin 2019 Vertigo Souvenir Package", 
+            "Rio 2022 Vertigo Souvenir Package",
+            "Stockholm 2021 Vertigo Souvenir Package",
+            "ESL One Cologne 2014 Challengers",
+            "ESL One Cologne 2014 Legends",
+            "Katowice 2019 Legends (Holo/Foil)",
+            "Katowice 2019 Minor Challengers (Holo/Foil)",
+            "Gift Package"
+        ],
+        "Music Kit": ["Music Kit"],
+        "Sticker": ["Sticker"],
+        "Charm": ["Charm"],
+        "Graffiti": ["Graffiti"],
+        "Patch": ["Patch"],
+        "Pass": ["Pass"],
+        "Equipment": ["Zeus"],
+        "Collectible": ["Pin"],
+        "Key": ["Key", "eSports Key"] 
+    }
+
+    for key, values in category_mapping.items():
+        for value in values:
+            if value.lower() in item.lower():
+                return key
+    return "Unknown"
+
+def subcategory(item):
+    subcategory_mapping = {
+        "Pistol": ["USP-S", "Glock-18", "P2000", "Desert Eagle", "Five-SeveN", "CZ75-Auto", "P250", "Dual Berettas", "Tec-9", "R8 Revolver"],
+        "Rifle": ["AK-47", "M4A4", "M4A1-S", "FAMAS", "Galil AR", "SG 553", "AUG"],
+        "Sniper Rifle": ["AWP", "SSG 08", "SCAR-20", "G3SG1"],
+        "SMG": ["MP7", "P90", "UMP-45", "MAC-10", "MP9", "PP-Bizon", "MP5-SD"],
+        "Shotgun": ["Nova", "XM1014", "MAG-7", "Sawed-Off"],
+        "Machine Gun": ["M249", "Negev"]}
+    for key, values in subcategory_mapping.items():
+        for value in values:
+            if value in item:
+                return value
+    return None
+
+def normalization(item):
+    item = re.sub('★','',item)
+    item = re.sub('StatTrak™','',item)
+    return item
+    
+df['Item_cleaned'] = df['Item'].apply(lambda x: normalization(x))
+df['Category'] = df['Item_cleaned'].apply(lambda x: categorization(x))
+df['Subcategory'] = df['Item_cleaned'].apply(lambda x: subcategory(x))
+
+base = 'https://market.csgo.com/en/'
+def custom_quote(item):
+    
+    item = item.replace('™', 'PLACEHOLDER_TM').replace('★', 'PLACEHOLDER_STAR')
+    
+    encoded = quote(item)
+   
+    return encoded.replace('PLACEHOLDER_TM', '™').replace('PLACEHOLDER_STAR', '★')
+
+df['url'] = df.apply(lambda row: f"{base}{row['Category']+'/'}"f"{row['Subcategory']+'/' if pd.notna(row['Subcategory']) else ''}"f"{custom_quote(row['Item'])}", axis=1)
+df.to_csv(path, encoding = 'utf-16', index = False)
+</details>
+### Проверка 120 предметов по созданным ссылкам
+На данном этапе наша задача извлечь со 120 страниц данные по которым строится график продаж предмета, цену запроса на покупку, и уточнить цену продажи.
+<details>
+  <summary><strong>🖼️ Страница предмета</strong></summary>
+
+  ![Внешний вид сайта](https://raw.githubusercontent.com/sazhiromru/images/main/item%20page.PNG)
+</details>
