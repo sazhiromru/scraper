@@ -647,6 +647,7 @@ df = df.sort_values(by='Rating', ascending=False)
 print(df.head())
 df.to_csv(path, encoding= 'utf-16', index=False)
 ```
+</details>  
 <br></br>  
 
 ## 3. SQL
