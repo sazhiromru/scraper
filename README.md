@@ -841,10 +841,10 @@ conn.close()
 import psycopg2
 
 conn = psycopg2.connect( 
-    host="database-1.cd0e0ckg0scj.ap-southeast-1.rds.amazonaws.com",
-    database="scraping",
-    user="postgres",
-    password="Poi8lkjfibchlrz"
+    host=
+    database=
+    user=
+    password=
 )
     
 cursor = conn.cursor()
