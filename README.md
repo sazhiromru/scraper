@@ -158,14 +158,13 @@ if __name__ == "__main__":
 
 </details>
 <br></br>
-<br></br>
 
 ## 2. Обработка данных
 <a id="data-wrangling"></a>
 Сбор данных с трех веб-сайтов и сохранение в формате CSV.
   
-Используемые технологии: Pandas, NumPy, Selenium, Beautiful Soup, re
-<br></br>
+Используемые технологии: Pandas, NumPy, Selenium, Beautiful Soup, re  
+
   
 ### Merge.
 Внешним слиянием соединяем три csv, округялем цифры, приводим валюту к доллару, убираем дубликаты, ошибки и находим самые выгодные сделки по продаже китай->рф и рф->китай
@@ -256,8 +255,8 @@ df_reverse.drop_duplicates(inplace = True)
 
 df_reverse.to_csv(f'reverse_{timestamp}.csv',index = False, encoding = 'utf-16')
 ```
-</details>
-<br></br>
+</details>  
+
 
 ### Создание ссылок для проверки рекомендаций.
 120 предметов с потенциально лучшей прибылью проверяются по истории продаж за последний месяц. Для этого необходимо сгенерировать ссылку для перехода на страницу предмета на сайта market-csgo.
@@ -379,8 +378,8 @@ def custom_quote(item):
 df['url'] = df.apply(lambda row: f"{base}{row['Category']+'/'}"f"{row['Subcategory']+'/' if pd.notna(row['Subcategory']) else ''}"f"{custom_quote(row['Item'])}", axis=1)
 df.to_csv(path, encoding = 'utf-16', index = False)
 ```
-</details>
-<br></br>
+</details>  
+
 
 ### Проверка 120 предметов по созданным ссылкам
 На данном этапе наша задача извлечь со 120 страниц данные по которым строится график продаж предмета, цену запроса на покупку, и уточнить цену продажи.
