@@ -49,7 +49,7 @@ def initialize_driver():
 
 
 def extract_items(data):
-    ''' функция для скрапа данных о предмете по шаблону наименование/цена'''
+    ''' функция для скрапа данных о предмете по шаблону наименование,цена'''
     soup = BeautifulSoup(data, 'html.parser')
     items_list = soup.find_all('div', class_=re.compile(r'item-info-block'))
     cleaned_list = [item.get_text().strip() for item in items_list if item.get_text().strip()]
@@ -67,7 +67,8 @@ def scroll_and_extract(driver, duration, output_file):
     '''Создаем файл с BOM отдельно - несколько раз были ошибки, это помогло
     Т к китайские йероглифы и множество спец знаков в наименованиях сохраняем в utf-16
     загрузка и очистка данных пачками по 2200, число подобрано из практики, баланс между памятью и I/O
-    Так же есть несколько условий отлова ошибок и перезапуска драйвера'''
+    Так же есть несколько условий отлова ошибок и перезапуска драйвера
+    Ключ к успешной работе - периодическая очистка кэша'''
 
     start_time = time.time()
     batch_data = []
@@ -95,10 +96,10 @@ def scroll_and_extract(driver, duration, output_file):
                 gc.collect()
 
             if time.time() - start_time > duration:
-                print("Time limit reached. Stopping scroll.")
+                print("время вышло.")
                 break
         except Exception as e:
-            print(f"Error during scrolling or extraction: {e}")
+            print(f"ошибка промотка: {e}")
             driver.quit()
             time.sleep(22)
             driver = initialize_driver()
@@ -121,7 +122,7 @@ def cleaning(file_name):
     df['Date'] = timestamp
     df = df.sort_values(by='Item').drop_duplicates(subset=['Item']).reset_index(drop=True)
     df.to_csv(file_name, index=False, encoding='utf-16')
-    print(f"Cleaned data saved to {file_name}")
+    print(f"Дата загружена в {file_name}")
 
 
 def main():
@@ -130,20 +131,21 @@ def main():
     duration = 1322
     
     driver = initialize_driver()
-    print('Driver initialized.')
+    print('драйвер запущен')
     
     driver.get('https://market.csgo.com/en/?priceMin=4')
     time.sleep(5)  
     
     scroll_and_extract(driver,duration = duration, output_file = output_file)
-    print('Scrolling and extraction completed.')
+    print('Промотка окончена.')
     
     driver.quit()
-    print('Driver closed.')
+    print('Драйвер закрыт.')
     
     cleaning(f'{output_file}_{timestamp}.csv')
-    print('Cleaning completed.')
+    print('Очистка закончена.')
 
 
 if __name__ == "__main__":
     main()
+
