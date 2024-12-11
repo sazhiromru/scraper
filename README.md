@@ -157,12 +157,15 @@ if __name__ == "__main__":
 ```
 
 </details>
+<br></br>
+<br></br>
 
 ## 2. Обработка данных
 <a id="data-wrangling"></a>
 Сбор данных с трех веб-сайтов и сохранение в формате CSV.
   
-  Используемые технологии: Pandas, NumPy, Selenium, Beautiful Soup, re
+Используемые технологии: Pandas, NumPy, Selenium, Beautiful Soup, re
+<br></br>
   
 ### Merge.
 Внешним слиянием соединяем три csv, округялем цифры, приводим валюту к доллару, убираем дубликаты, ошибки и находим самые выгодные сделки по продаже китай->рф и рф->китай
@@ -254,18 +257,16 @@ df_reverse.drop_duplicates(inplace = True)
 df_reverse.to_csv(f'reverse_{timestamp}.csv',index = False, encoding = 'utf-16')
 ```
 </details>
+<br></br>
 
 ### Создание ссылок для проверки рекомендаций.
 120 предметов с потенциально лучшей прибылью проверяются по истории продаж за последний месяц. Для этого необходимо сгенерировать ссылку для перехода на страницу предмета на сайта market-csgo.
 В соответствии со структурой данных на сайте создан справочник, позволяющий сконструировать ссылку по названию предмета.
 
-Из инетересного - символы '™' и '★'.
-
-Для генерации категорий и корректным сравнением со справочником символы удаляются специальной функцией.
-
-Для генерации ссылки символы меняются на специальные плейсхолдеры и обратно, для результата в виде AK-47/StatTrak™%20AK-47 или Shadow%20Daggers/★%20Shadow%20Daggers
+Из инетересного - символы '™' и '★'. Для генерации категорий и корректным сравнением со справочником символы удаляются специальной функцией. Для генерации ссылки символы меняются на специальные плейсхолдеры и обратно, для результата в виде AK-47/StatTrak™%20AK-47 или Shadow%20Daggers/★%20Shadow%20Daggers
 <details>
   <summary><strong>📜 Url_creator код</strong></summary>
+  
 ```python
 import pandas as pd
 import re
@@ -379,6 +380,7 @@ df['url'] = df.apply(lambda row: f"{base}{row['Category']+'/'}"f"{row['Subcatego
 df.to_csv(path, encoding = 'utf-16', index = False)
 ```
 </details>
+<br></br>
 
 ### Проверка 120 предметов по созданным ссылкам
 На данном этапе наша задача извлечь со 120 страниц данные по которым строится график продаж предмета, цену запроса на покупку, и уточнить цену продажи.
@@ -386,4 +388,213 @@ df.to_csv(path, encoding = 'utf-16', index = False)
   <summary><strong>🖼️ Страница предмета</strong></summary>
 
   ![Внешний вид сайта](https://raw.githubusercontent.com/sazhiromru/images/main/item%20page.PNG)
+</details>
+<details>
+  <summary><strong>📜 Полный код скрипта</strong></summary>
+
+```python
+import pandas as pd
+import undetected_chromedriver as uc
+from bs4 import BeautifulSoup
+from selenium.webdriver.chrome.service import Service
+import re
+import time
+from datetime import datetime
+from random import uniform
+
+timestamp = datetime.now().strftime('%d-%m-%Y')
+
+def get_medium_price(history):
+    now = datetime.now()
+    list1=[]
+    for record in history:
+        item1 = [item.strip() for item in record.split(',')]
+        item1.pop(2)
+        item1.pop(0)
+        item1[1] = item1[1].replace('. Price.','')
+        list1.append(item1)
+        date_format = "%b %d"
+    
+    print(list1)
+    filtered_list = [
+        item for item in list1
+        if (now - datetime.strptime(item[0], date_format).replace(year=2024)).days < 4
+    ]
+    print(filtered_list)    
+    sum1=0
+    if len(filtered_list)<=2:
+        history_price = 'меньше двух сделок за 4 дня'
+    else:
+        for price2 in filtered_list:
+            sum1 += float(price2[1])
+            history_price = sum1/len(filtered_list)
+    print(history_price)
+    return history_price
+
+def frequency_calc(history):
+    now = datetime.now()
+    list1=[]
+    for record in history:
+        item1 = [item.strip() for item in record.split(',')]
+        item1.pop(2)
+        item1.pop(0)
+        item1[1] = item1[1].replace('. Price.','')
+        list1.append(item1)
+        date_format = "%b %d"
+    filtered_list = [
+        item for item in list1
+        if (now - datetime.strptime(item[0], date_format).replace(year=2024)).days < 4
+    ]
+
+    if len(filtered_list)<=2:
+        frequency = 'low'
+    elif len(filtered_list)<=5:
+        frequency = 'medium'
+    elif len(filtered_list)<=9:
+        frequency = 'high'
+    else:
+        frequency = 'very high'
+    return frequency
+
+
+def initialize_driver():
+
+    options = uc.ChromeOptions()
+    options.add_argument("--headless=new")  
+    options.add_argument("--disable-gpu")  
+    my_user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"
+    options.add_argument("--incognito") 
+    options.add_argument(f"--user-agent={my_user_agent}")
+    options.add_argument('--disable-extensions')
+    options.add_argument("--disable-plugins-discovery")
+    options.add_argument("--no-sandbox")  
+    options.add_argument("--disable-dev-shm-usage")  
+    options.add_argument("--window-size=800x600")  
+    options.add_argument("--disable-extensions")  
+    options.add_argument("--disable-software-rasterizer") 
+    
+    chrome_prefs = {
+        "profile.default_content_setting_values": {
+            "images": 2,
+        }
+        }
+    
+    options.page_load_strategy = 'eager'
+    options.experimental_options["prefs"] = chrome_prefs
+
+    service = Service(executable_path="chromedriver.exe")
+    driver = uc.Chrome(service=service, options=options)
+    driver.set_page_load_timeout(60) 
+    return driver
+
+path = f'direct_{timestamp}.csv'
+number = 100
+k=0
+df = pd.read_csv(path, encoding = 'utf-16')
+driver = initialize_driver()
+
+
+bad_url=[]
+history_prices = []
+actual_prices = []
+request_prices = []
+frequency_list = []
+soup = None
+duration = 2000
+
+for url in df['url']:
+    start = time.time()
+    attempts = 0
+    while attempts<=2:
+        try:
+            driver.get(url)
+            time.sleep(uniform(5.45,7.11))
+            data = driver.page_source
+            soup = BeautifulSoup(data,'html.parser')
+            prices = soup.find_all('div', class_='price')
+            prices1 = [price.get_text() for price in prices]
+            if prices!=[]:
+                break
+        except Exception as e:
+            driver.quit()
+            time.sleep(10)
+            driver = initialize_driver()
+            time.sleep(10)
+            print(f'возниклда ошибка {e}')
+            attempts+=1
+
+    if any('₽' in price for price in prices1):
+        history_prices.append('ошибочный url')
+        request_prices.append('ошибочный url')
+        actual_prices.append('ошибочный url')
+        frequency_list.append('ошибочный url')
+        k+=1
+        continue
+
+
+    if prices1[3].startswith(' '):
+        actual_prices.append('нет цены на покупку')
+        request_prices.append(prices1[3])
+    else:
+        prices1[-1] = prices1[-1].replace('≤ ', '').replace('$', '').replace(' ','')
+        request_prices.append(prices1[-1])
+
+        pattern = r'\$(\d+(\.\d+)?)'
+        match = re.search( pattern, prices1[3])
+        if match:
+            actual_prices.append(match.group(1))
+            print(match.group(1))
+        else:
+            actual_prices.append('цена отсутствует')
+            print('цена отсутсвует')
+
+
+    history_charts = soup.select('path.highcharts-point.highcharts-color-0')
+    history = [chart.get('aria-label') for chart in history_charts]
+    history_prices.append(get_medium_price(history))
+    frequency_list.append(frequency_calc(history))
+
+   
+    print(f'страница номер {k} обработана')
+    print(len(actual_prices))
+    print(len(request_prices))
+    print(len(history_prices))
+    k+=1
+
+    if k%10==0:
+        time.sleep(5)
+        print('перегрузка')
+        driver.execute_cdp_cmd("Network.clearBrowserCache", {})
+        time.sleep(5)
+
+    if k>number:
+        print('конец')
+        driver.quit()
+        print(len(actual_prices))
+        print(len(request_prices))
+        print(len(history_prices))
+        break
+        
+    if (time.time() - start) > duration:
+        driver.quit()
+        break
+
+df['Medium Prices'] = None
+df['Actual Prices'] = None
+df['Request price'] = None
+df['Frequency'] = None
+
+df.loc[0:number, 'Medium Price'] = history_prices
+df.loc[0:number, 'Actual Prices'] = actual_prices
+df.loc[0:number, 'Request price'] = request_prices
+df.loc[0:number, 'Frequency'] = frequency_list
+print('данные загружены')
+
+if bad_url!=[]:
+    df_badurl = pd.DataFrame(bad_url)
+    df_badurl.to_csv('badurl.csv')
+
+df.to_csv(path, encoding='utf-16',index = False)
+print('файл сохранен')
+```
 </details>
