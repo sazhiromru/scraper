@@ -382,7 +382,8 @@ df.to_csv(path, encoding = 'utf-16', index = False)
 
 
 ### Проверка 120 предметов по созданным ссылкам
-На данном этапе наша задача извлечь со 120 страниц данные по которым строится график продаж предмета, цену запроса на покупку, и уточнить цену продажи.
+На данном этапе наша задача извлечь со 120 страниц данные по которым строится график продаж предмета, цену запроса на покупку, и уточнить цену продажи.  
+Для последующей обработки считается средняя цена сделок за последние 4 суток, и количество этих сделок.
 <details>
   <summary><strong>🖼️ Страница предмета</strong></summary>
 
@@ -596,4 +597,53 @@ if bad_url!=[]:
 df.to_csv(path, encoding='utf-16',index = False)
 print('файл сохранен')
 ```
-</details>
+</details>  
+
+### Ранжирование
+По полученным данным, и произвольной эмпирической формуле ранжируем сделки по степени привлекательности.  
+Так же, проверяем все сделки на прибыльность на случай ошибки алгоритмов/скрапинга
+<details>
+  <summary><strong>📜 Полный код скрипта</strong></summary>
+
+```python
+import pandas as pd
+from datetime import datetime
+
+timestamp = datetime.now().strftime('%d-%m-%Y')
+
+path = f'direct_{timestamp}.csv'
+
+df = pd.read_csv(path, encoding = 'utf-16')
+columns_con = ['Request price','buff_price','c5_price','best_price', 'Actual Prices', 'market_price', 'Medium Price']
+df[columns_con] = df[columns_con].apply(pd.to_numeric, errors = 'coerce')
+
+def calculate_rating_coef(row):
+    valid_min = min([value for value in [row['buff_price'], row['c5_price']] if value > 0], default=1)
+    
+    if row['Frequency'] == 'low' and row['Request price'] < valid_min:
+        return 0
+    elif row['Frequency'] == 'medium':
+        return 1.2 * ((row['Medium Price'] / valid_min)**3) * (valid_min**0.16)
+    elif row['Frequency'] == 'high':
+        return 1.4 * ((row['Medium Price'] / valid_min)**3) * (valid_min**0.16)
+    elif row['Frequency'] == 'very high':
+        return 1.6 * ((row['Medium Price'] / valid_min)**3) * (valid_min**0.16)
+    else:
+        return 1 
+    
+def check_profit(row):
+    valid_min = min([value for value in [row['buff_price'], row['c5_price']] if value > 0], default=1)
+    if row['Medium Price'] * 0.9 < valid_min*1.03:
+        return 0
+    else:
+        return 1
+ 
+
+df['Rating'] = df.apply(calculate_rating_coef, axis=1)
+df['Check'] = df.apply(check_profit, axis = 1)  
+df['Rating'] = df['Rating'] * df['Check']
+
+df = df.sort_values(by='Rating', ascending=False)
+print(df.head())
+df.to_csv(path, encoding= 'utf-16', index=False)
+```
