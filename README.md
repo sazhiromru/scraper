@@ -647,3 +647,7 @@ df = df.sort_values(by='Rating', ascending=False)
 print(df.head())
 df.to_csv(path, encoding= 'utf-16', index=False)
 ```
+<br></br>
+## 3. SQL
+<a id="SQL"></a>
+Сбор данных с трех веб-сайтов и сохранение в формате CSV.
