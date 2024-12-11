@@ -154,6 +154,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+```
 
 </details>
 
@@ -251,7 +252,7 @@ df_reverse['Date'] = timestamp
 df_reverse.drop_duplicates(inplace = True)
 
 df_reverse.to_csv(f'reverse_{timestamp}.csv',index = False, encoding = 'utf-16')
-
+```
 </details>
 
 ### Создание ссылок для проверки рекомендаций.
@@ -376,7 +377,9 @@ def custom_quote(item):
 
 df['url'] = df.apply(lambda row: f"{base}{row['Category']+'/'}"f"{row['Subcategory']+'/' if pd.notna(row['Subcategory']) else ''}"f"{custom_quote(row['Item'])}", axis=1)
 df.to_csv(path, encoding = 'utf-16', index = False)
+```
 </details>
+
 ### Проверка 120 предметов по созданным ссылкам
 На данном этапе наша задача извлечь со 120 страниц данные по которым строится график продаж предмета, цену запроса на покупку, и уточнить цену продажи.
 <details>
