@@ -652,6 +652,8 @@ df.to_csv(path, encoding= 'utf-16', index=False)
 
 ## 3. SQL
 <a id="SQL"></a>
+
+### Создание БД
 Для управления/просмотра данных используем PgAdmin. Подключение через SHH public ip ec2, т е bastion server.  
 
 Под 4 скрапинга создаем 4 таблицы. Так же для продаж Китай - РФ и РФ - Китай по одной таблице.
@@ -660,7 +662,175 @@ df.to_csv(path, encoding= 'utf-16', index=False)
   <summary><strong>🖼️ PGAdmin</strong></summary>
 
   ![Внешний вид сайта](https://raw.githubusercontent.com/sazhiromru/images/main/sql.PNG)
+</details>  
+
+### Загрузка данных в таблицы 
+При загрузке прописываем конфликты по ключу, т к при скрапинге невозможно получить идеальные данные  
+
+<details>
+  <summary><strong>📜 Полный код скрипта</strong></summary>
+
+```python
+from datetime import datetime
+import os
+import pandas as pd
+import psycopg2
+
+timestamp = datetime.now().strftime('%d-%m-%Y')
+
+conn = psycopg2.connect(
+    host=
+    database=
+    user=
+    password=
+)
+cursor = conn.cursor()
+
+try:
+    for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))):
+        if filename == f'market_{timestamp}.csv':
+            df = pd.read_csv(filename, encoding='utf-16')
+            df['Date'] = pd.to_datetime(df['Date'], format='%d-%m-%Y').dt.strftime('%Y-%m-%d')
+            for index, row in df.iterrows():
+                cursor.execute(
+                    """INSERT INTO public.market (item, price, date, id) 
+                    VALUES (%s, %s, %s, %s)
+                    on conflict(id)
+                    do update set
+                    item = excluded.item,
+                    price = excluded.price,
+                    date = excluded.date""",
+                    (row['Item'], row['market_price'], row['Date'], row['Item'] + ' ' + str(row['Date']))
+                )
+    conn.commit()
+    print('market has been loaded')
+except Exception as e:
+    print(f'возникла ошибка {e}')
+    conn.rollback()
+
+try:
+    for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))):
+        if filename == f'buff_{timestamp}.csv':
+            df = pd.read_csv(filename, encoding='utf-16')
+            df['Date'] = pd.to_datetime(df['Date'], format='%d-%m-%Y').dt.strftime('%Y-%m-%d')
+            for index, row in df.iterrows():
+                cursor.execute(
+                    """INSERT INTO public.buff_sell (item, price, date, id) 
+                    VALUES (%s, %s, %s, %s)
+                    on conflict(id)
+                    do update set
+                    item = excluded.item,
+                    price = excluded.price,
+                    date = excluded.date""",
+                    (row['Item'], row['buff_price'], row['Date'], row['Item'] + ' ' + str(row['Date']))
+                )
+    conn.commit()
+    print('buff has been loaded')
+except Exception as e:
+    print(f'возникла ошибка {e}')
+    conn.rollback()
+
+try:
+    for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))):
+        if filename == f'buff_buyorders_{timestamp}.csv':
+            df = pd.read_csv(filename, encoding='utf-16')
+            df['Date'] = pd.to_datetime(df['Date'], format='%d-%m-%Y').dt.strftime('%Y-%m-%d')
+            for index, row in df.iterrows():
+                cursor.execute(
+                    """INSERT INTO public.buff_buyorders (item, price, date, id) 
+                    VALUES (%s, %s, %s, %s)
+                    on conflict(id)
+                    do update set
+                    item = excluded.item,
+                    price = excluded.price,
+                    date = excluded.date""",
+                    (row['Item'], row['buyorders_price'], row['Date'], row['Item'] + ' ' + str(row['Date']))
+                )
+    conn.commit()
+    print('buff buy has been loaded')
+except Exception as e:
+    print(f'возникла ошибка {e}')
+    conn.rollback()
+
+try:
+    for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))):
+        if filename == f'c5game_{timestamp}.csv':
+            df = pd.read_csv(filename, encoding='utf-16')
+            df['Date'] = pd.to_datetime(df['Date'], format='%d-%m-%Y').dt.strftime('%Y-%m-%d')
+            for index, row in df.iterrows():
+                cursor.execute(
+                    """INSERT INTO public.c5 (item, price, date, id) 
+                    VALUES (%s, %s, %s, %s)
+                    on conflict(id)
+                    do update set
+                    item = excluded.item,
+                    price = excluded.price,
+                    date = excluded.date""",
+                    (row['Item'], row['c5_price'], row['Date'], row['Item'] + ' ' + str(row['Date']))
+                )
+    conn.commit()
+    print('c5 has been loaded')
+except Exception as e:
+    print(f'возникла ошибка {e}')
+    conn.rollback()
+
+try:
+    for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))):
+        if filename == f'direct_{timestamp}.csv':
+            df = pd.read_csv(filename, encoding='utf-16')
+            df['Date'] = pd.to_datetime(df['Date'], format='%d-%m-%Y').dt.strftime('%Y-%m-%d')
+            for index, row in df.iterrows():
+                cursor.execute(
+                    """INSERT INTO public.direct (item, buff_price, market_price, c5_price, market_c5, market_buff, best_price, label, date, category, frequency, medium_price, rating, id)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    on conflict(id)
+                    do update set
+                    item = excluded.item,
+                    buff_price = excluded.buff_price,
+                    market_price = excluded.market_price,
+                    c5_price = excluded.c5_price,
+                    market_c5 = excluded.market_c5,
+                    market_buff = excluded.market_buff,
+                    best_price = excluded.best_price,
+                    label = excluded.label,
+                    date = excluded.date,
+                    category = excluded.category,
+                    frequency = excluded.frequency,
+                    medium_price = excluded.medium_price,
+                    rating = excluded.rating""",
+                    (row['Item'], row['buff_price'], row['market_price'], row['c5_price'], row['market_c5'], row['market_buff'], row['best_price'], row['label'], row['Date'], row['Category'], row['Frequency'], row['Medium Price'], row['Rating'], row['Item'] + ' ' + str(row['Date']))
+                )
+    conn.commit()
+    print('direct has been loaded')
+except Exception as e:
+    print(f'возникла ошибка {e}')
+    conn.rollback()
+
+try:
+    for filename in os.listdir(os.path.dirname(os.path.abspath(__file__))):
+        if filename == f'reverse_{timestamp}.csv':
+            df = pd.read_csv(filename, encoding='utf-16')
+            df['Date'] = pd.to_datetime(df['Date'], format='%d-%m-%Y').dt.strftime('%Y-%m-%d')
+            for index, row in df.iterrows():
+                cursor.execute(
+                    """INSERT INTO public.reverse (item, market_price, buff_price, coef, date, id) 
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    on conflict(id)
+                    do update set
+                    item = excluded.item,
+                    market_price = excluded.market_price,
+                    buff_price = excluded.buff_price,
+                    coef = excluded.coef,
+                    date = excluded.date""",
+                    (row['Item'], row['market_price'], row['buyorders_price'], row['coef'], row['Date'], row['Item'] + ' ' + str(row['Date']))
+                )
+    conn.commit()
+    print('reverse has been loaded')
+except Exception as e:
+    print(f'возникла ошибка {e}')
+    conn.rollback()
+
+cursor.close()
+conn.close()
+'''
 </details>
-https://github.com/sazhiromru/images/blob/main/sql.PNG?raw=true
-
-
