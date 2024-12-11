@@ -832,5 +832,42 @@ except Exception as e:
 
 cursor.close()
 conn.close()
-'''
+```
+</details>
+
+### Очистка устаревших данных
+После каждого цикла проверяем данные, удаляем записи старше 60 дней
+
+<details>
+  <summary><strong>📜 Полный код скрипта</strong></summary>
+
+```python
+import psycopg2
+
+conn = psycopg2.connect( 
+    host="database-1.cd0e0ckg0scj.ap-southeast-1.rds.amazonaws.com",
+    database="scraping",
+    user="postgres",
+    password="Poi8lkjfibchlrz"
+)
+    
+cursor = conn.cursor()
+
+try:
+    cursor.execute("""
+    delete from market where date < now() - interval'61 DAYS';
+    delete from c5 where date < now() - interval'61 DAYS';
+    delete from buff_buyorders where date < now() - interval'61 DAYS';
+    delete from buff_sell where date < now() - interval'61 DAYS';
+    delete from direct where date < now() - interval'61 DAYS';
+    delete from reverse where date < now() - interval'61 DAYS';             
+    """)
+    print('данные очищены')
+except Exception as e:
+    print(f'возникла ошибка {e}')
+    conn.rollback()
+finally:
+    cursor.close()
+    conn.close()
+```
 </details>
