@@ -959,4 +959,67 @@ finally:
   ![Cloudwatch](https://raw.githubusercontent.com/sazhiromru/images/main/email%20alert%20cloudwatch.PNG)
   ![Cloudwatch](https://raw.githubusercontent.com/sazhiromru/images/main/subscription%20cloudwatch%20confirmed.PNG)
   
-</details> 
+</details>   
+
+## Docker
+Нам необходимо запустить google chrome на EC2. 
+1. Для подбора компонентов и первоначального тестирования создаем контейнер, тестируем на PC, выгружаем на hub.docker, затем запускаем его на EC2.
+2. Для структуры файла и ускорения процесса - расширение VSCode для Docker
+3.  Библиотеки копируем с аналогичных проектов github
+
+<details>
+  <summary><strong>🖼️ Docker</strong></summary>
+
+  ![Docker](https://raw.githubusercontent.com/sazhiromru/images/main/docker%20load.PNG)
+  ![Docker](https://raw.githubusercontent.com/sazhiromru/images/main/docker%20pull.PNG)
+  ![Docker](https://raw.githubusercontent.com/sazhiromru/images/main/Docker%20install.PNG)
+  ![Docker](https://raw.githubusercontent.com/sazhiromru/images/main/docker%20run.PNG)
+</details>
+
+<details>
+  <summary><strong>📜 Полный код скрипта</strong></summary>
+
+```python
+# For more information, please refer to https://aka.ms/vscode-docker-python
+FROM python:3-slim
+
+#библиотеки
+RUN apt-get update && apt-get install -y \
+    wget \
+    unzip \
+    curl \ 
+    fonts-liberation \
+    libnss3 \
+    libxss1 \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libgtk-3-0 \
+    libdrm2 \
+    libgbm1 \
+    python3-distutils 
+
+#хром
+RUN wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+    dpkg -i google-chrome-stable_current_amd64.deb || apt-get -f install -y && \
+    rm google-chrome-stable_current_amd64.deb
+
+RUN CHROME_DRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) && \
+    wget -q "https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip" && \
+    unzip chromedriver_linux64.zip -d /usr/local/bin/ && \
+    rm chromedriver_linux64.zip
+
+ENV DISPLAY=:99
+
+COPY requirements.txt .
+RUN python -m pip install -r requirements.txt
+
+WORKDIR /app
+COPY . /app
+
+
+RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
+USER appuser
+
+CMD ["python3", "/app/c5game/c5game/spiders/c5game.py"]
+```
+</details>
