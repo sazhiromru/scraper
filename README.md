@@ -1167,7 +1167,9 @@ echo "$(date '+%Y-%m-%d %H:%M:%S') - Все скрипты обработаны.
 </details>  
 
 <details>
+  
 ```sql
+
 SELECT
  max(cumulative_profit)/500, date
 FROM
@@ -1223,5 +1225,6 @@ ORDER BY
   group by date
 LIMIT
   1048575
+
 ```
 </details> 
