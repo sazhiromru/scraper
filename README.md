@@ -1024,3 +1024,58 @@ USER appuser
 CMD ["python3", "/app/c5game/c5game/spiders/c5game.py"]
 ```
 </details>
+
+## 5. BASH 
+1. Устанавливаем все компоненты, которые использовались в контейнере Docker
+2. Для удобства устанавливаем Nano
+3. Устанавливаем и запускаем через systemctl Cron для автоматизации скриптов
+4. Создаем sh-скрипт для поочередного запуска всех необходимых python скриптов
+
+<details>
+  <summary><strong>🖼️ Bash</strong></summary>
+
+  ![Docker](https://raw.githubusercontent.com/sazhiromru/images/main/environment%20creation.PNG)
+
+</details>
+
+<details>
+  <summary><strong>📜 Полный код скрипта</strong></summary>
+
+```bash
+#!/bin/bash
+
+# Список файлов Python, которые нужно выполнить
+scripts=("market2.py" "buff_sell.py" "c5game.py" "buff_buyorders.py" "merge.py" "url_creator.py" "market_detailed.py" "ranging.py" "sql_load.py" "sql_cleaning.py" "folder_cleaning.py")
+
+# Количество попыток для каждого скрипта
+max_attempts=2
+
+# Поочередный запуск каждого скрипта
+for script in "${scripts[@]}"
+do
+    echo "-------------------------"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - Запускаем $script..."
+    attempt=1
+    while [ $attempt -le $max_attempts ]
+    do
+        echo "$(date '+%Y-%m-%d %H:%M:%S') - Попытка $attempt..."
+        python3 "$script"
+        if [ $? -eq 0 ]; then
+            echo "$(date '+%Y-%m-%d %H:%M:%S') - $script выполнен успешно."
+            break
+        else
+            echo "$(date '+%Y-%m-%d %H:%M:%S') - Ошибка при выполнении $script. Попытка $attempt завершилась неудачей."
+            ((attempt++))
+            if [ $attempt -le $max_attempts ]; then
+                echo "$(date '+%Y-%m-%d %H:%M:%S') - Повторная попытка запуска $script..."
+            else
+                echo "$(date '+%Y-%m-%d %H:%M:%S') - Превышено количество попыток для $script. Переходим к следующему скрипту."
+            fi
+        fi
+    done
+    sleep 5
+done
+
+echo "$(date '+%Y-%m-%d %H:%M:%S') - Все скрипты обработаны."
+```
+</details>
