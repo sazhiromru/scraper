@@ -892,11 +892,45 @@ finally:
 Для загрузки файлов я использовал scp через Amazon Cli, но для выгрузки и просмотра результата работы скриптов использовал S3. Для этого создаем точку доступа и маршрут по которому трафик от EC2 до S3 идет через внутренний endpoint
 
 <details>
-  <summary><strong>🖼️ VPC</strong></summary>
+  <summary><strong>🖼️ S3</strong></summary>
 
   ![S3](https://raw.githubusercontent.com/sazhiromru/images/main/s3%20endpoint%20creation.PNG)
   ![S3](https://raw.githubusercontent.com/sazhiromru/images/main/s3%20endpoint.PNG)
   ![S3](https://raw.githubusercontent.com/sazhiromru/images/main/s3%20-%20endpoint%20internal%20route.PNG)
   ![S3](https://raw.githubusercontent.com/sazhiromru/images/main/ec2%20s3%20lists.PNG)
   ![S3](https://raw.githubusercontent.com/sazhiromru/images/main/s3%20final.PNG)
+</details>    
+
+### Создание RDS и EC2 
+Стандартные настройки free tier  подходят почти везде, в RDS отключаем auto-scaling, в EC2 - расширернный мониторинг, связываем RDS c EC2 при создании для удобства
+
+<details>
+  <summary><strong>🖼️ RDS и EC2 </strong></summary>
+
+  ![RDS и EC2 ](https://raw.githubusercontent.com/sazhiromru/images/main/RDS%20autoscaling%20off.PNG)
+  ![RDS и EC2 ](https://raw.githubusercontent.com/sazhiromru/images/main/aws%20rds%20connect%20to%20ec2.PNG)
+</details>    
+
+### IAM 
+1. Создаем IAM role для EC2 для доступа и управления S3, чтобы можно было использовать консольные команды. 2. Создаем роль для пользователя для настройки AWS CLI
+
+<details>
+  <summary><strong>🖼️ IAM </strong></summary>
+
+  ![EC2 role ](https://raw.githubusercontent.com/sazhiromru/images/main/IAM%20EC2%20role%20for%20rds.PNG)
+  ![user role](https://raw.githubusercontent.com/sazhiromru/images/main/IAM%20user%20access%20creation.PNG)
+</details>    
+
+### Настрйока AWS CLI, соединение с EC2 через консоль с PEM ключом
+1. Устанавливаем Amazon CLI на windows. 2. Создаем код доступа к Amazon CLI для ранее созданного в IAM пользователя 3. Получаем CSV файл для созданной ранее роли с данными для входа. 4. Настраиваем доступ пользователя к AMAZON CLI. С помощью pem ключа пытаемся получить доступ через SSH через командную строку. Получаем ошибку, что доступ к pem ключу не ограничен. 5. Убираем разрешения для других пользователей и отключаем наследование разрешений в Windows для этого файла. 6. Логинимся
+
+<details>
+  <summary><strong>🖼️ AWS CLI setting </strong></summary>
+
+  ![AWS CLI](https://raw.githubusercontent.com/sazhiromru/images/main/AWS%20CLI%20access%20key.PNG)
+  ![AWS CLI](https://raw.githubusercontent.com/sazhiromru/images/main/aws%20cli%20key%20csv.PNG)
+  ![AWS CLI](https://raw.githubusercontent.com/sazhiromru/images/main/aws%20cli%20configure.PNG)
+  ![AWS CLI](https://raw.githubusercontent.com/sazhiromru/images/main/aws%20pem%20cli%20key%20heritage.PNG)
+  ![AWS CLI](https://raw.githubusercontent.com/sazhiromru/images/main/pem%20heritage%20disabled.PNG)
+  ![AWS CLI](https://raw.githubusercontent.com/sazhiromru/images/main/aws%20cli%20pem%20solved.PNG)
 </details>  
