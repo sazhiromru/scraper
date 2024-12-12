@@ -902,13 +902,16 @@ finally:
 </details>    
 
 ### Создание RDS и EC2 
-Стандартные настройки free tier  подходят почти везде, в RDS отключаем auto-scaling, в EC2 - расширернный мониторинг, связываем RDS c EC2 при создании для удобства
+1. Стандартные настройки free tier  подходят почти везде, в RDS отключаем auto-scaling, в EC2 - расширернный мониторинг, связываем RDS c EC2 при создании для удобства
+2. Настраиваем security groups для неограниченного доступа к EC2 с любого ip
+3. Настраиваем security groups для доступа к SQL базе через EC2 
 
 <details>
   <summary><strong>🖼️ RDS и EC2 </strong></summary>
 
   ![RDS и EC2 ](https://raw.githubusercontent.com/sazhiromru/images/main/RDS%20autoscaling%20off.PNG)
   ![RDS и EC2 ](https://raw.githubusercontent.com/sazhiromru/images/main/aws%20rds%20connect%20to%20ec2.PNG)
+  ![RDS и EC2 ](https://raw.githubusercontent.com/sazhiromru/images/main/ec2%20security.PNG)
 </details>    
 
 ### IAM 
