@@ -1092,6 +1092,7 @@ CMD ["python3", "/app/c5game/c5game/spiders/c5game.py"]
 
 
 ---
+<a id="bash-section"></a>
 ## ~~~ 6. BASH ~~~ 
 ---
 
