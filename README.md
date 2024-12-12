@@ -917,10 +917,11 @@ ___
   ![RDS и EC2 ](https://raw.githubusercontent.com/sazhiromru/images/main/RDS%20autoscaling%20off.PNG)
   ![RDS и EC2 ](https://raw.githubusercontent.com/sazhiromru/images/main/aws%20rds%20connect%20to%20ec2.PNG)
   ![RDS и EC2 ](https://raw.githubusercontent.com/sazhiromru/images/main/ec2%20security.PNG)
-</details>    
+</details>  
 
-### IAM 
---- 
+
+### IAM  
+
 1. Создаем IAM role для EC2 для доступа и управления S3, чтобы можно было использовать консольные команды.
 2. Создаем роль для пользователя для настройки AWS CLI
 
@@ -929,10 +930,11 @@ ___
 
   ![EC2 role ](https://raw.githubusercontent.com/sazhiromru/images/main/IAM%20EC2%20role%20for%20rds.PNG)
   ![user role](https://raw.githubusercontent.com/sazhiromru/images/main/IAM%20user%20access%20creation.PNG)
-</details>    
+</details>  
 
-### Настройка AWS CLI, соединение с EC2 через консоль с PEM ключом
-...
+
+### Настройка AWS CLI, соединение с EC2 через консоль с PEM ключом  
+
 1. Устанавливаем Amazon CLI на windows.
 2. Создаем код доступа к Amazon CLI для ранее созданного в IAM пользователя.
 3. Получаем CSV файл для созданной ранее роли с данными для входа.
@@ -951,8 +953,9 @@ ___
   ![AWS CLI](https://raw.githubusercontent.com/sazhiromru/images/main/aws%20cli%20pem%20solved.PNG)
 </details>  
 
-### CLoudwatch 
-***
+
+### CLoudwatch  
+
 1. Для отладки смотрим нагрузку CPU при тестировании скриптов. В среднем, если нагрузка держится на 100% больше 10 минут, EC2 перестает функционировать. Поэтому оптимизируем скрипты с учетом показателей CPU.
 2. Создаем алерт для EC2 при потери соединения. Ставим автоматическую перезагрузку сервера при потере соединения на 15 минут
 3. Создаем алерт для SQL базы данных при загрузке хранилища
