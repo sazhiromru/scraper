@@ -1110,3 +1110,10 @@ done
 echo "$(date '+%Y-%m-%d %H:%M:%S') - Все скрипты обработаны."
 ```
 </details>
+```
+<details>
+  <summary><strong>🖼️ Cron</strong></summary>
+
+  ![Cron](https://raw.githubusercontent.com/sazhiromru/images/main/crontab.PNG)
+
+</details>
