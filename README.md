@@ -1094,6 +1094,7 @@ CMD ["python3", "/app/c5game/c5game/spiders/c5game.py"]
 2. Для удобства устанавливаем Nano
 3. Устанавливаем и запускаем через systemctl Cron для автоматизации скриптов
 4. Создаем sh-скрипт для поочередного запуска всех необходимых python скриптов
+5. Автоматизируем в cron, данные собираются ночью, днем отображается дэшборд
 
 <details>
   <summary><strong>🖼️ Bash</strong></summary>
@@ -1152,3 +1153,75 @@ echo "$(date '+%Y-%m-%d %H:%M:%S') - Все скрипты обработаны.
 </details>
 <br>
 
+## ~~~ 7. Metabase ~~~
+---
+1. Устанавливаем Metabase
+2. Создаем необходимые SQL запросы для отображения основных показателей. Пример SQL запроса, используещего оконные функции для расчета посуточного KPI приложен ниже
+3. Устанавливаем сроки запуска и остановки jar контейнера для отображения дэшборда через cron
+
+<details>
+  <summary><strong>🖼️ Bash</strong></summary>
+
+  ![Docker](https://raw.githubusercontent.com/sazhiromru/images/main/metabase%20started.PNG)
+
+</details>  
+
+<details>
+```sql
+SELECT
+ max(cumulative_profit)/500, date
+FROM
+  (
+    WITH sales_batch AS (
+      SELECT
+        date,
+        rating,
+        market_price,
+        best_price,
+        market_price / best_price AS purchase_price,
+        market_price - market_price / best_price as profit
+      FROM
+        direct
+     
+WHERE
+        best_price != 0 and market_price < 50
+       
+   AND rating > 1
+    ),
+    cumulative_sales AS (
+      SELECT
+        date,
+        rating,
+        market_price,
+        best_price,
+        SUM(purchase_price) OVER (
+          PARTITION BY date
+         
+ORDER BY
+            rating
+        ) AS cumulative_purchase,
+        sum(profit) over (
+          partition by date
+          order by
+            rating
+        ) as cumulative_profit
+      FROM
+        sales_batch
+    )
+    SELECT
+      date,
+      rating,
+      market_price,
+      best_price,
+      cumulative_purchase,
+      cumulative_profit
+    FROM
+      cumulative_sales
+    WHERE
+      cumulative_purchase < 500
+  ) AS "source"
+  group by date
+LIMIT
+  1048575
+```
+</details> 
