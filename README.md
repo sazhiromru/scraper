@@ -872,4 +872,16 @@ finally:
     cursor.close()
     conn.close()
 ```
+</details>  
+
+## 4.AWS  
+### Создание VPC
+При создании обязательно включаем расшифровку DNS, т к без этого не выйдет создать внутренний endpoint для S3, чего поначалу я не знал. 
+  <summary><strong>🖼️ VPC</strong></summary>
+
+  ![VPC](https://raw.githubusercontent.com/sazhiromru/images/main/VPC%200.PNG)
+  ![VPC](https://raw.githubusercontent.com/sazhiromru/images/main/VPC%20settings.PNG)
+  ![VPC](https://raw.githubusercontent.com/sazhiromru/images/main/VPC%20creation.PNG)
+  ![VPC](https://raw.githubusercontent.com/sazhiromru/images/main/VPC%20scheme.PNG)
+  ![VPC](https://raw.githubusercontent.com/sazhiromru/images/main/DNS%20resolution.PNG)
 </details>
