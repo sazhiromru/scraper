@@ -1090,8 +1090,10 @@ CMD ["python3", "/app/c5game/c5game/spiders/c5game.py"]
 </details>
 <br></br>
 
+<a id="Bash"></a>
+
 ---
-## ~~~ 6. BASH ~~~ <a id="Bash"></a>
+## ~~~ 6. BASH ~~~ 
 ---
 
 1. Устанавливаем все компоненты, которые использовались в контейнере Docker
