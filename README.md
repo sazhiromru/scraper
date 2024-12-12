@@ -873,10 +873,11 @@ finally:
     conn.close()
 ```
 </details>  
-<br></br>
+<br></br>  
+
 ## 4.AWS  
 ### Создание VPC
-При создании обязательно включаем расшифровку DNS, т к без этого не выйдет создать внутренний endpoint для S3, чего поначалу я не знал. 
+При создании обязательно включаем расшифровку DNS, т к без этого не получится подключится через внутренний endpoint S3, чего поначалу я не знал. Формат endpoint - com.ap-southeast... и т д, т е для его маршрутизации нужен DNS
 <details>
   <summary><strong>🖼️ VPC</strong></summary>
 
@@ -885,4 +886,17 @@ finally:
   ![VPC](https://raw.githubusercontent.com/sazhiromru/images/main/VPC%20creation.PNG)
   ![VPC](https://raw.githubusercontent.com/sazhiromru/images/main/VPC%20scheme.PNG)
   ![VPC](https://raw.githubusercontent.com/sazhiromru/images/main/DNS%20resolution.PNG)
-</details>
+</details>  
+
+### Подключение S3  
+Для загрузки файлов я использовал scp через Amazon Cli, но для выгрузки и просмотра результата работы скриптов использовал S3. Для этого создаем точку доступа и маршрут по которому трафик от EC2 до S3 идет через внутренний endpoint
+
+<details>
+  <summary><strong>🖼️ VPC</strong></summary>
+
+  ![S3](https://raw.githubusercontent.com/sazhiromru/images/main/s3%20endpoint%20creation.PNG)
+  ![S3](https://raw.githubusercontent.com/sazhiromru/images/main/s3%20endpoint.PNG)
+  ![S3](https://raw.githubusercontent.com/sazhiromru/images/main/s3%20-%20endpoint%20internal%20route.PNG)
+  ![S3](https://raw.githubusercontent.com/sazhiromru/images/main/ec2%20s3%20lists.PNG)
+  ![S3](https://raw.githubusercontent.com/sazhiromru/images/main/s3%20final.PNG)
+</details>  
