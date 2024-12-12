@@ -912,7 +912,8 @@ finally:
 </details>    
 
 ### IAM 
-1. Создаем IAM role для EC2 для доступа и управления S3, чтобы можно было использовать консольные команды. 2. Создаем роль для пользователя для настройки AWS CLI
+1. Создаем IAM role для EC2 для доступа и управления S3, чтобы можно было использовать консольные команды.
+2. Создаем роль для пользователя для настройки AWS CLI
 
 <details>
   <summary><strong>🖼️ IAM </strong></summary>
@@ -939,3 +940,20 @@ finally:
   ![AWS CLI](https://raw.githubusercontent.com/sazhiromru/images/main/pem%20heritage%20disabled.PNG)
   ![AWS CLI](https://raw.githubusercontent.com/sazhiromru/images/main/aws%20cli%20pem%20solved.PNG)
 </details>  
+
+### CLoudwatch 
+1. Для отладки смотрим нагрузку CPU при тестировании скриптов. В среднем, если нагрузка держится на 100% больше 10 минут, EC2 перестает функционировать. Поэтому оптимизируем скрипты с учетом показателей CPU.
+2. Создаем алерт для EC2 при потери соединения. Ставим автоматическую перезагрузку при потере соединения на 15 минут
+3. Создаем алерт для SQL базы данных при загрузке хранилища
+4. Подписываемся через SNS на все уведомления
+
+<details>
+  <summary><strong>🖼️ Cloudwatch </strong></summary>
+
+  ![Cloudwatch](https://raw.githubusercontent.com/sazhiromru/images/main/cloudwatch%20CPU%20utilization.PNG)
+  ![Cloudwatch](https://raw.githubusercontent.com/sazhiromru/images/main/AWS%20cloud%20system%20failure%20alert.PNG)
+  ![Cloudwatch](https://raw.githubusercontent.com/sazhiromru/images/main/cloudwatch%20alarms.PNG)
+  ![Cloudwatch](https://raw.githubusercontent.com/sazhiromru/images/main/email%20alert%20cloudwatch.PNG)
+  ![Cloudwatch](https://raw.githubusercontent.com/sazhiromru/images/main/subscription%20cloudwatch%20confirmed.PNG)
+  
+</details> 
