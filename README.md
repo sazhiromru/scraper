@@ -651,6 +651,12 @@ df.to_csv(path, encoding= 'utf-16', index=False)
 
 ### Создание БД
 Для управления/просмотра данных используем PgAdmin. Подключение через SHH public ip ec2, т е bastion server.  
+<details>
+  <summary><strong>🖼️ SSH подключение к серверу</strong></summary>
+
+  ![Connection](https://raw.githubusercontent.com/sazhiromru/images/main/ssh%20SQL%20bastion%20server.PNG)
+  ![SSH tunnel](https://raw.githubusercontent.com/sazhiromru/images/main/sql%20SSH%20tunnel.PNG)
+</details>
 
 Под 4 скрапинга создаем 4 таблицы. Так же для продаж Китай - РФ и РФ - Китай по одной таблице.
 Уникальным ключом каждой таблицы является дата+название предмета  
