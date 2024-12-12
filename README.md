@@ -652,6 +652,36 @@ print(df.head())
 df.to_csv(path, encoding= 'utf-16', index=False)
 ```
 </details>  
+
+### Очистка от устаревших файлов
+
+Емкость хранилища ограничена, поэтому предусматриваем очистку папки от файлов старше 15 дней  
+
+<details>
+  <summary><strong>📜 Полный код скрипта</strong></summary>
+
+```python
+import os
+from datetime import datetime, timedelta
+
+
+delete_day = (datetime.now() - timedelta(days = 16)).strftime('%d-%m-%Y')
+
+names = ['market_','direct_','reverse_','c5_','buff_','buff_buyorders_']
+
+found = False
+
+for filename in os.listdir('/home/ec2-user/'):
+    for name in names:
+        if filename == f'{name}{delete_day}.csv':
+            os.remove(f'/home/ec2-user/{filename}')
+            print(f'удален файл {filename}')
+            found = True
+
+if not found:
+    print("удалять нечего")
+```
+</details>
 <br></br>  
 
 ---
