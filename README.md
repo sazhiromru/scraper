@@ -257,7 +257,7 @@ df_reverse.drop_duplicates(inplace = True)
 df_reverse.to_csv(f'reverse_{timestamp}.csv',index = False, encoding = 'utf-16')
 ```
 </details>  
-
+<br>
 
 ### Создание ссылок для проверки рекомендаций  
 
@@ -381,7 +381,7 @@ df['url'] = df.apply(lambda row: f"{base}{row['Category']+'/'}"f"{row['Subcatego
 df.to_csv(path, encoding = 'utf-16', index = False)
 ```
 </details>  
-
+<br>
 
 ### Проверка 120 предметов по созданным ссылкам  
 
@@ -601,6 +601,7 @@ df.to_csv(path, encoding='utf-16',index = False)
 print('файл сохранен')
 ```
 </details>  
+<br>
 
 ### Ранжирование  
 
@@ -652,6 +653,7 @@ print(df.head())
 df.to_csv(path, encoding= 'utf-16', index=False)
 ```
 </details>  
+<br>
 
 ### Очистка от устаревших файлов
 
@@ -706,6 +708,7 @@ if not found:
 
   ![Внешний вид сайта](https://raw.githubusercontent.com/sazhiromru/images/main/sql.PNG)
 </details>  
+<br>
 
 ### Загрузка данных в таблицы  
 
@@ -878,6 +881,7 @@ cursor.close()
 conn.close()
 ```
 </details>
+<br>
 
 ### Очистка устаревших данных  
 
@@ -933,6 +937,7 @@ finally:
   ![VPC](https://raw.githubusercontent.com/sazhiromru/images/main/VPC%20scheme.PNG)
   ![VPC](https://raw.githubusercontent.com/sazhiromru/images/main/DNS%20resolution.PNG)
 </details>  
+<br>
 
 ### Подключение S3  
 
@@ -947,6 +952,7 @@ finally:
   ![S3](https://raw.githubusercontent.com/sazhiromru/images/main/ec2%20s3%20lists.PNG)
   ![S3](https://raw.githubusercontent.com/sazhiromru/images/main/s3%20final.PNG)
 </details>    
+<br>
 
 ### Создание RDS и EC2  
 
@@ -961,7 +967,7 @@ finally:
   ![RDS и EC2 ](https://raw.githubusercontent.com/sazhiromru/images/main/aws%20rds%20connect%20to%20ec2.PNG)
   ![RDS и EC2 ](https://raw.githubusercontent.com/sazhiromru/images/main/ec2%20security.PNG)
 </details>  
-
+<br>
 
 ### IAM  
 
@@ -974,7 +980,7 @@ finally:
   ![EC2 role ](https://raw.githubusercontent.com/sazhiromru/images/main/IAM%20EC2%20role%20for%20rds.PNG)
   ![user role](https://raw.githubusercontent.com/sazhiromru/images/main/IAM%20user%20access%20creation.PNG)
 </details>  
-
+<br>
 
 ### Настройка AWS CLI, соединение с EC2 через консоль с PEM ключом  
 
@@ -995,7 +1001,7 @@ finally:
   ![AWS CLI](https://raw.githubusercontent.com/sazhiromru/images/main/pem%20heritage%20disabled.PNG)
   ![AWS CLI](https://raw.githubusercontent.com/sazhiromru/images/main/aws%20cli%20pem%20solved.PNG)
 </details>  
-
+<br>
 
   
 
@@ -1147,3 +1153,5 @@ echo "$(date '+%Y-%m-%d %H:%M:%S') - Все скрипты обработаны.
   ![Cron](https://raw.githubusercontent.com/sazhiromru/images/main/crontab.PNG)
 
 </details>
+<br>
+
