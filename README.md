@@ -921,7 +921,7 @@ finally:
   ![user role](https://raw.githubusercontent.com/sazhiromru/images/main/IAM%20user%20access%20creation.PNG)
 </details>    
 
-### Настрйока AWS CLI, соединение с EC2 через консоль с PEM ключом
+### Настройка AWS CLI, соединение с EC2 через консоль с PEM ключом
 1. Устанавливаем Amazon CLI на windows.
 2. Создаем код доступа к Amazon CLI для ранее созданного в IAM пользователя.
 3. Получаем CSV файл для созданной ранее роли с данными для входа.
