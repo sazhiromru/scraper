@@ -960,6 +960,7 @@ finally:
   ![Cloudwatch](https://raw.githubusercontent.com/sazhiromru/images/main/subscription%20cloudwatch%20confirmed.PNG)
   
 </details>   
+<br></br>
 
 ## Docker
 Нам необходимо запустить google chrome на EC2. 
